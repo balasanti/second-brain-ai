@@ -18,9 +18,9 @@ function Login() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:5000/login",
-        { email, password }
-      );
+      `${process.env.REACT_APP_API_URL}/login`,
+      { email, password }
+    );
 
       if (res.status === 200) {
         alert("Login successful");
