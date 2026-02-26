@@ -6,16 +6,33 @@ import ollama
 
 app = Flask(__name__)
 
-# Allow requests from your Vercel frontend
-CORS(app, origins=["https://second-brain-frontend-h6ky6rynu-balasantis-projects.vercel.app"])
+# -----------------------
+# HEALTH CHECK
+# -----------------------
+@app.route("/", methods=["GET"])
+def health_check():
+    return {
+        "status": "Backend is live",
+        "routes": ["/login", "/upload", "/ask"]
+    }, 200
 
-# Upload folder
+# -----------------------
+# CORS SETTINGS
+# -----------------------
+CORS(app, origins=[
+    "https://second-brain-frontend-h6ky6rynu-balasantis-projects.vercel.app"
+])
+
+# -----------------------
+# UPLOAD CONFIG
+# -----------------------
 UPLOAD_FOLDER = "uploads"
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# Store text extracted from uploaded PDF
 stored_text = ""
 
 # -----------------------
@@ -24,8 +41,8 @@ stored_text = ""
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
-    # You can replace these with environment variables later
-    if data["email"] == "admin@gmail.com" and data["password"] == "123":
+    # Hardcoded credentials for testing
+    if data.get("email") == "admin@gmail.com" and data.get("password") == "123":
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"message": "Invalid credentials"}), 401
 
@@ -45,7 +62,6 @@ def upload():
 
     reader = PyPDF2.PdfReader(filepath)
     stored_text = ""
-
     for page in reader.pages:
         stored_text += page.extract_text() or ""
 
@@ -81,6 +97,5 @@ def ask():
 # START SERVER
 # -----------------------
 if __name__ == "__main__":
-    # Use Render-provided port or default 5000
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port)
